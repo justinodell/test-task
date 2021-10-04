@@ -1,0 +1,54 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
+parameters:
+    mailer_config.from: '%env(MAILER_FROM)%'
+    mailer_config.from_name: '%env(MAILER_FROM_NAME)%'
+    mailer_config.to: '%env(MAILER_TO)%'
+    user_agent: '%env(USER_AGENT)%'
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        bind:
+            $stopWordsPathEn: '%kernel.project_dir%/data/stopwords_en.txt'
+            $userAgent: '%user_agent%'
+            $mailerConfig:
+                from: '%mailer_config.from%'
+                from_name: '%mailer_config.from_name%'
+                to: '%mailer_config.to%'
+            $roleHierarchy: '%security.role_hierarchy.roles%'
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/*'
+        exclude: '../src/{DependencyInjection,Entity,Tests,Kernel.php}'
+
+    # controllers are imported separately to make sure services can be injected
+    # as action arguments even if you don't extend any base controller class
+    App\Controller\:
+        resource: '../src/Controller'
+        tags: ['controller.service_arguments']
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+
+    # PRODUCT PROCESSORS
+    App\Processors\Processor\WordDensityProcessor:
+        arguments: [!tagged { tag: 'channel.word_density_processor', index_by: 'key' }]
+
+    App\Processors\Processor\BaseWordDensityProcessor:
+        abstract:  true
+        arguments: ['@http_client']
+
+    App\Processors\Processor\Html2TextWordDensityProcessor:
+        parent: App\Processors\Processor\BaseWordDensityProcessor
+        arguments:
+            index_0: '@http_client'
+        tags:
+            - { name: 'channel.word_density_processor', key: 'html2text' }

@@ -1,0 +1,8 @@
+monolog:
+    channels: [jobs]
+    handlers:
+        jobs:
+            type: stream
+            path: "%kernel.logs_dir%/jobs.log"
+            level: debug
+            channels: [jobs]

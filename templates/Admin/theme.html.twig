@@ -1,0 +1,36 @@
+{% block _word_density_url_widget %}
+    <div class="form-widget">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">URL:</span>
+            </div>
+            <input class="form-control"
+                   type="search"
+                   name="{{ form.vars.full_name }}"
+                   value="{{ app.request.get(form.vars.name) ?? '' }}"
+                   placeholder="URL">
+        </div>
+    </div>
+{% endblock %}
+
+{% block _word_density_notes_widget %}
+    <div class="form-widget">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Notes</span>
+            </div>
+            <input type="text" class="form-control" name="{{ form.vars.full_name }}" value="{{ form.vars.data }}">
+        </div>
+    </div>
+{% endblock %}
+
+{% block _word_density_limit_widget %}
+    <div class="form-widget">
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Words</span>
+            </div>
+            <input type="text" class="form-control" name="{{ form.vars.full_name }}" value="{{ form.vars.data }}">
+        </div>
+    </div>
+{% endblock %}

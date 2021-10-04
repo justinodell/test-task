@@ -1,0 +1,105 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% form_theme form 'Admin/theme.html.twig' %}
+
+{% block page_title 'Word Density' %}
+
+{% block page_content %}
+    <div class="content-panel">
+        <div class="content-panel-body without-padding">
+            {{ form_start(form) }}
+
+            <div class="row align-items-center">
+                <div class="col-sm-12 col-md-5 col-lg-5 my-1">
+                    {{ form_widget(form.url) }}
+                    {{ form_errors(form.url) }}
+                </div>
+                <div class="col-sm-12 col-md-3 col-lg-3 my-1">
+                    {{ form_widget(form.notes) }}
+                    {{ form_errors(form.notes) }}
+                </div>
+                <div class="col-sm-12 col-md-2 col-lg-2 my-1">
+                    {{ form_widget(form.limit) }}
+                    {{ form_errors(form.limit) }}
+                </div>
+                <div class="col-auto my-1">
+                    <button class="btn btn-primary" type="submit">Start <i class="fa fa-play"></i></button>
+                </div>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    <h5>
+        URLs (last 20)
+        {% if is_granted('ROLE_SUPER_ADMIN') %}
+            <small class="badge badge-secondary">items in queue: {{ messengerMessagesCount }}</small>
+        {% endif %}
+    </h5>
+    <div class="content-panel">
+        <div class="content-panel-body with-rounded-top with-min-h-250 without-padding without-footer">
+            <table class="table datagrid with-rounded-top with-rounded-bottom">
+                <thead>
+                <tr>
+                    <th><span>URL</span></th>
+                    <th><span>Words #</span></th>
+                    <th><span>Limit</span></th>
+                    <th><span>Jobs #</span></th>
+                    <th><span>Status</span></th>
+                    <th><span class="sr-only">Actions</span></th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for wordDensity in wordDensityList %}
+                    <tr>
+                        <td>
+                            {{ wordDensity.url }}
+                            {% if wordDensity.notes %}
+                                <p><small><strong>Notes: </strong> {{ wordDensity.notes }}</small></p>
+                            {% endif %}
+                        </td>
+                        <td>{{ wordDensity.wordsCount }}</td>
+                        <td>{{ wordDensity.limit }}</td>
+                        <td>{{ wordDensity.jobs|length }}</td>
+                        <td>
+                            {% if wordDensity.lastJob.status == constant('App\\Entity\\Job::STATUS_PROCESSING') %}
+                                <i class="fas fa-spinner fa-spin" title="Processing"></i> Processing
+                            {% elseif wordDensity.lastJob.status == constant('App\\Entity\\Job::STATUS_DONE') %}
+                                <i class="fa fa-check text-success" title="Done"></i> Done
+                            {% elseif wordDensity.lastJob.status == constant('App\\Entity\\Job::STATUS_NEW') %}
+                                <i class="fa fa-spinner fa-spin" title="New"></i> New
+                            {% endif %}
+                        </td>
+                        <td class="actions">
+                            <a class="btn btn-sm btn-info" href="{{ ea_url().setRoute('admin_word_density_run', {id:wordDensity.id}) }}">
+                                <span class="btn-label">Run <i class="fa fa-play-circle"></i></span>
+                            </a>
+                            <div class="btn-group">
+                                <a type="button" class="btn btn-sm btn-secondary" href="{{ ea_url().setRoute('admin_word_density_job_export', {id:wordDensity.lastJob.id}) }}">
+                                    <span class="btn-label">Export <i class="fa fa-download"></i></span>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="visually-hidden">Toggle Dropdown</span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    {% for job in wordDensity.jobs %}
+                                        <li><a class="dropdown-item" href="{{ ea_url().setRoute('admin_word_density_job_export', {id:job.id}) }}">{{ job.name }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td class="no-results" colspan="100">
+                            No results
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
